@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microservices Practice. 4th Week</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key="></script>
+    <script type="text/javascript">
+        <!--LOCATIONS CONTAINER-->
+        var locations = [
+            ['Valle de la Luna', -22.924155, -68.288103, 1],
+            ['Humberstone y Santa Laura', -20.210155, -69.801569, 2],
+            ['Chuquicamata', -22.316964, -68.933477, 3],
+            ['Morro de Arica', -18.479432, -70.323676, 4],
+            ['Playa Hornitos', -22.915622, -70.290275, 5],
+            ['Laguna Cejar', -23.063035, -68.213378, 6],
+            ['Laguna Parinacota', -19.060498, -69.250661, 7],
+            ['Salar de Tara', -23.060296, -67.241466, 8],
+            ['Pica', -20.491570, -69.329696, 9],
+        ];
+
+        function InitMap() {
+            <!--DEFAULT ZOOM LEVEL CHANGED TO 4-->
+            var map = new google.maps.Map(document.getElementById('map'),{
+                zoom: 4,
+                center: new google.maps.LatLng(-21.391303, -69.185811),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            <!--MARKER INITIALIZATION AND SETTINGS-->
+            var infowindow = new google.maps.InfoWindow();
+            var marker, i;
+            for (i = 0; i < locations.length; i++){
+                marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(
+                        locations[i][1],+locations[i][2]
+                    ),
+                    map: map,
+                    icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=' + (i+1) + '|FF0000|000000'
+                });
+                google.maps.event.addListener(marker, 'click', (function (marker, i){
+                    return function (){
+                        infowindow.setContent(locations[i][0]);
+                        infowindow.open(map, marker);
+                    }})(marker, i));
+            }
+            <!--ZOOM WINDOWS MESSAGE INITIALIZATION -->
+            var zoomwindow = new google.maps.InfoWindow({
+                content: 'Zoom Level',
+                position: new google.maps.LatLng(-21.391303, -69.185811)});
+            zoomwindow.open(map);
+            <!--ZOOMING EVENT AND MESSAGE-->
+            map.addListener('zoom_changed', function(){
+                    $.ajax({
+					        url: 'https://sc8w67wh1j.execute-api.us-east-1.amazonaws.com/Test/zoom?level=4',
+					        headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+					        type:'GET',
+					        crossDomain: true,
+					        dataType: 'text',
+					        success: function(data) {
+					            window.alert(data);
+					        }
+					    });
+                zoomwindow.setContent('Zoom level: '  + map.getZoom());
+            });
+        }
+    </script>
+</head>
+
+<body onload="InitMap();">
+    <h1>Microservices Practice. 4th Week</h1>
+    <div id="map" style="height: 800px; width: auto;"> </div>
+
+</body>
+</html>

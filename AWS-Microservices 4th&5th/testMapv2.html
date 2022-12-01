@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microservices Practice. 4th Week</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key="></script>
+    <script type="text/javascript">
+
+        <!--CLUSTERS AND MARKERS CONTAINER-->
+        var clusters;
+        var markers = [];
+
+        function InitMap(){
+            <!--CLEARING MARKERS FUNCTION FOR USING ON EVERY ZOOM_CHANGED-->
+            function clearMarkers() {
+		        for(var i = 0; i < markers.length; i++){
+		          markers[i].setMap(null);
+		        }
+		        markers = [];
+		      }
+            <!--DEFAULT ZOOM LEVEL CHANGED TO 4 AND CENTER OF THE MAP WITH THE COORDINATES OF CLUSTER 9-->
+            var map = new google.maps.Map(document.getElementById('map'),{
+                zoom: 4,
+                center: new google.maps.LatLng(-21.391303, -69.185811),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            <!--DEFAULT CLUSTER 9 INITIALIZATION AND SETTING-->
+            var marker;
+            if(map.getZoom()==4){
+                clearMarkers();
+                marker = new google.maps.Marker({
+                position: new google.maps.LatLng(-21.391303, -69.185811),
+                map: map,
+                icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=9|FF0000|000000'
+                });
+                markers.push(marker);
+            }
+            <!--ZOOM WINDOWS MESSAGE INITIALIZATION -->
+            var zoomwindow = new google.maps.InfoWindow({
+                content: 'Zoom Level',
+                position: new google.maps.LatLng(-21.391303, -69.185811)
+            });
+            zoomwindow.open(map);
+            <!--ZOOMING EVENT LISTENER-->
+            map.addListener('zoom_changed', function(){
+                $.ajax({
+                        url: 'https://sc8w67wh1j.execute-api.us-east-1.amazonaws.com/Test/zoom?level='+ (map.getZoom()),
+                        headers: {'Content-Type': 'application/json'},
+                        type:'GET',
+                        crossDomain: true,
+                        dataType: 'json',
+                        success: function(data) {
+                            <!---->
+                            clusters = JSON.parse(JSON.stringify(data));
+                            <!--CLUSTER DEFINED AS A DICT FOR LEVEL 4 AND A LIST OF DICTS FOR LEVELS 5-6-7++-->
+                            if(map.getZoom()<=4){
+                                clearMarkers();
+                                marker = new google.maps.Marker({
+                                    position: new google.maps.LatLng(-21.391303, -69.185811),
+                                    map: map,
+                                    icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=9|FF0000|000000'
+                                });
+                                markers.push(marker);
+                            }
+                            else if(map.getZoom()==5){
+                                clearMarkers();
+                                for(i=0; i < clusters.length; i++){
+                                    marker = new google.maps.Marker({
+                                        position: new google.maps.LatLng(clusters[i]["latitude"], clusters[i]["longitude"]),
+                                        map: map,
+                                        icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=' + (clusters[i]["cluster_size"]) + '|FF0000|000000'
+                                    });
+                                    markers.push(marker);
+                                }
+                            }
+                            else if(map.getZoom()==6){
+                                clearMarkers();
+                                for(i=0; i < clusters.length; i++){
+                                    marker = new google.maps.Marker({
+                                        position: new google.maps.LatLng(clusters[i]["latitude"], clusters[i]["longitude"]),
+                                        map: map,
+                                        icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=' + (clusters[i]["cluster_size"]) + '|FF0000|000000'
+                                    });
+                                    markers.push(marker);
+                                }
+                            }
+                            else if(map.getZoom()>=7){
+                                clearMarkers();
+                                for(i=0; i < clusters.length; i++){
+                                    marker = new google.maps.Marker({
+                                        position: new google.maps.LatLng(clusters[i]["latitude"], clusters[i]["longitude"]),
+                                        map: map,
+                                        icon: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=' + (clusters[i]["cluster_size"]) + '|FF0000|000000'
+                                    });
+                                    markers.push(marker);
+                                }
+                            }
+                        }
+                    });
+                zoomwindow.setContent('Zoom level: '  + map.getZoom());
+            });
+        }
+    </script>
+</head>
+
+<body onload="InitMap();">
+    <h1>Microservices Practice. 4th Week</h1>
+    <div id="map" style="height: 800px; width: auto;"> </div>
+</body>
+</html>
